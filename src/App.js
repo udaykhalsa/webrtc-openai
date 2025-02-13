@@ -10,7 +10,7 @@ const WebRTCComponent = () => {
     setStatus("Connecting...");
 
     try {
-      const EPHEMERAL_KEY = "ek_67adcd1965e08190beb028d2f9b2b25e";
+      const EPHEMERAL_KEY = "ek_67adeed3d23c8190bc1ec86e9086a433";
 
       pc.current = new RTCPeerConnection();
 
@@ -27,7 +27,14 @@ const WebRTCComponent = () => {
       dataChannel.current.addEventListener("open", () => {
         console.log("Data channel open!");
       
-        const message = JSON.stringify({
+        const text_prompt = `Greet the user by name—Uday—and ask if they're ready to start learning Python.
+                            If they say yes, begin with the following instructions. Otherwise, let them know that they can inform you whenever they're ready, and you'll start accordingly.
+                            Communicate with the user in English unless they initiate the conversation in another language. Take a moment to read the instructions carefully before responding.
+                            Once the user confirms they're ready, introduce the Python learning path, starting with data types, functions, and classes, followed by other essential topics.
+                            Maintain a professor-like tone throughout the explanation unless the user asks you a direct question.
+                            Ignore any background noise or unrelated conversation from the user's end unless they ask a direct Python-related question.`
+
+        var message = JSON.stringify({
           type: "conversation.item.create",
           item: {
             type: "message",
@@ -35,7 +42,7 @@ const WebRTCComponent = () => {
             content: [
               {
                 type: "input_text",
-                text: "Talk to the user in English only unless he starts talking in his language. As soon as the connection starts, start talking about the Python learning path since I want to learn Python. Keep speaking like a professor unless there's a direct question to you. Ignore all the noise coming from my end unless they're direct question related to python and to you.",
+                text: text_prompt,
               },
             ],
           },
