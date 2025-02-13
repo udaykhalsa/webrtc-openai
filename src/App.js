@@ -4,33 +4,51 @@ const WebRTCComponent = () => {
   const [status, setStatus] = useState("Not Connected");
   const audioRef = useRef(null);
   let pc = useRef(null);
+  let dataChannel = useRef(null);
 
   const startCall = async () => {
     setStatus("Connecting...");
 
     try {
-      // Fetch session token from the server
-      const EPHEMERAL_KEY = "ek_67acb4625a8c8190abb2e08f96241070";
+      const EPHEMERAL_KEY = "ek_67adcd1965e08190beb028d2f9b2b25e";
 
-      // Create a new RTCPeerConnection
       pc.current = new RTCPeerConnection();
 
-      // Handle remote audio stream
       pc.current.ontrack = (event) => {
         if (audioRef.current) {
           audioRef.current.srcObject = event.streams[0];
         }
       };
 
-      // Get microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       pc.current.addTrack(stream.getTracks()[0]);
 
-      // Data channel for events
-      const dataChannel = pc.current.createDataChannel("oai-events");
-      dataChannel.addEventListener("message", (e) => console.log(e.data));
+      dataChannel.current = pc.current.createDataChannel("oai-events");
+      dataChannel.current.addEventListener("open", () => {
+        console.log("Data channel open!");
+      
+        const message = JSON.stringify({
+          type: "conversation.item.create",
+          item: {
+            type: "message",
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: "Talk to the user in English only unless he starts talking in his language. As soon as the connection starts, start talking about the Python learning path since I want to learn Python. Keep speaking like a professor unless there's a direct question to you. Ignore all the noise coming from my end unless they're direct question related to python and to you.",
+              },
+            ],
+          },
+        });
+      
+        dataChannel.current.send(message);
+        console.log("Sent JSON message:", message);
+      });      
 
-      // Create an SDP offer
+      dataChannel.current.addEventListener("message", (e) =>
+        console.log("Received:", e.data)
+      );
+
       const offer = await pc.current.createOffer();
       await pc.current.setLocalDescription(offer);
 
